@@ -70,7 +70,7 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
             # print(hoje)
 
             # Subtraindo os meses para obter a data inicial
-            data_i = ontem - monthdelta.MonthDelta(self.meses)
+            data_i = ontem - monthdelta.monthdelta(self.meses) #MonthDelta(self.meses)
             self.dia_i = data_i.day
             self.mes_i = data_i.month
             self.ano_i = data_i.year
@@ -83,7 +83,7 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
         #PARA DIAS NÃO ÚTEIS, INCLUSIVE CONSIDERANDO FERIADOS
         else:
             hoje = date.today()
-            data_i = hoje - monthdelta.MonthDelta(self.meses)
+            data_i = hoje - monthdelta.monthdelta(self.meses)
             intervalo = bmf.valid_days(data_i, hoje)
             # Obtendo último dia válido
             ultima_data = intervalo[-1]
@@ -94,7 +94,7 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
             # print(hoje)
 
             # Subtraindo os meses para obter a data inicial
-            data_i = ultima_data - monthdelta.MonthDelta(self.meses)
+            data_i = ultima_data - monthdelta.monthdelta(self.meses)
             self.dia_i = data_i.day
             self.mes_i = data_i.month
             self.ano_i = data_i.year
@@ -116,8 +116,7 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
 
         # Selecionando os dados da tabela (fundos)
 
-        #fundos = html.xpath("//table[@class='table-general']//a/@href")
-        fundos = html.xpath("//div[@id='fiis-list-container']//span[@class='symbol']/text()")
+        fundos = html.xpath("//div[@class='tickerBox__title']/text()")
         #print(fundos)
         #print(len(fundos))
         # Configurando a lista de fundos
@@ -225,19 +224,23 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
                         i = requests.get(f'https://www.fundsexplorer.com.br/funds/{fundo}')
                         html3 = parser.fromstring(i.text)
                         # Obtendo o tipo de fundo
-                        tfundo = html3.xpath(
-                            "//div[@class='col-md-6 col-xs-12'][2]/ul/li[4]/div[@class='text-wrapper']/span[@class='description']/text()")
+                        try:
+                            tfundo = html3.xpath(
+                                "/html/body/div[2]/section[13]/div/div/div[6]/p[2]/b/text()")
+                        except:
+                            tfundo = "Indefinido"
                         # Obtendo o valor do aluguel pago por cota
                         # vfundo = html3.xpath("//div[@class='col-md-12 col-xs-12']//div[@class='carousel-cell'][3]/span[@class='indicator-value']/text()")
                         # Obtendo a liquidez diária
-                        # Obtendo P_VP OBS: na posição [0] é a liquidez e na [6] o pvp
-                        pvp = html3.xpath("//div[@class='col-md-12 col-xs-12']//span[@class='indicator-value']/text()")
+                        liqDay = html3.xpath("/html/body/div[2]/section[2]/div/div[1]/p[2]/b/text()")
+                        # Obtendo P_VP
+                        pvp = html3.xpath("/html/body/div[2]/section[2]/div/div[7]/p[2]/b/text()")
                         # Site para obter os dividendos
                         # w = requests.get(f'https://www.meusdividendos.com/fundo-imobiliario/{fundo.replace("11", "").strip().upper()}')
                         # html4 = parser.fromstring(w.text)
                         # Obtendo valor anual dos dividendos
                         # vdividendo = html4.xpath("//div[@style='text-align:center;']//span/text()")
-                        vdividendo = html3.xpath("//div[@class='col-md-12 col-xs-12']//span[@class='indicator-value']/text()")
+                        vdividendo = html3.xpath("/html/body/div[2]/section[6]/div/div[3]/div[1]/p[2]/b/text()")
                         # print('-'*20, 'Dados dos dividendos', '-'*20)
                         # print(dividendo)
                         # Inserindo os dados nas demais linhas
@@ -251,12 +254,11 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
                                 self.unilist.append(j.replace('"', '').strip())
                             # Valor do dividendo Anual
                             try:
-                                if len(vdividendo[2]) != '' or len(vdividendo[2]) != 'N/A':
-                                    self.unilist.append(float(
-                                        vdividendo[2].replace(',', '.').replace('R$', '').replace('%', '').strip()))
+                                if len(vdividendo[0]) != '' or len(vdividendo[0]) != 'N/A':
+                                    self.unilist.append(float(vdividendo[0].replace(',', '.')))
                                 else:
                                     self.unilist.append(0.0)
-                            except:
+                            except ValueError:
                                 self.unilist.append(0.0)
 
                             # Inserindo o valor do Papel na unilist
@@ -265,11 +267,19 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
 
                             # Adicionando a liquidez diária
                             try:
-                                self.unilist.append(float(pvp[0].replace('.', '')))
-                            except:
-                                self.unilist.append(float(pvp[0]))
+                                if "K" in liqDay[0]:
+                                    self.unilist.append(float(liqDay[0].replace(',', '.').replace('K', ''))*1000)
+                                elif "M" in liqDay[0]:
+                                    self.unilist.append(float(liqDay[0].replace(',', '.').replace('M', '')) * 1000000)
+                                else:
+                                    self.unilist.append(float(liqDay[0].replace(',', '.')))
+                            except ValueError:
+                                self.unilist.append(0)
                             # Adicionando o p/vp, importante para ver se vale a pena comprar o papel
-                            self.unilist.append(float(pvp[6].replace(',', '.')))
+                            try:
+                                self.unilist.append(float(pvp[0].replace(',', '.')))
+                            except ValueError:
+                                self.unilist.append(0)
 
                             # INSERINDO O RISCO
                             # CONVERTENDO A VARIAÇÃO(f(x)) PARA ARRAY
@@ -366,9 +376,9 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
     def dadosSelect(self):
 
         # Verificando se o arquivo existe
-        if os.path.exists(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv'):
-            os.remove(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv')
-        with open(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv', 'w', newline='') as dados:
+        if os.path.exists(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv'):
+            os.remove(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv')
+        with open(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv', 'w', newline='') as dados:
             writer = csv.writer(dados)
             col_name = list(range(0, len(self.list_csv[0])))
             #print(col_name)
@@ -377,20 +387,21 @@ class WebScraping(threading.Thread):#threading.Thread, QThread):
                 writer.writerow(d)
         # Lendo a tabela com PANDAS Dataframe
         # df = pd.read_table('/Users/milso/Desktop/MONETA/Dados_Papeis.csv', 'utf-8')
-        df = pd.read_csv(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv', engine='python')
+        #df = pd.read_csv(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv', engine='python')
+        df = pd.read_csv(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv', encoding='ISO-8859-1')
         print(df)
 
 if __name__ == '__main__':
-    meses = 6
+    meses = 12
     #kind = 'diario'
-    kind = 'mensal'
+    kind = 'semanal'
     short = 9
     long = 21
     stdoutmutex = threading.Lock()
     threads = []
     descartados = ['HFOF11', 'BBVJ11', 'MGFF11', 'LVBI11']
-    path_old = '/Users/milso/Desktop/COTAHIST_A2018/COTAHIST_A2018.TXT'
-    path_now = '/Users/milso/Desktop/COTAHIST_A2018/COTAHIST_A2019.TXT'
+    path_old = 'E:\OneDrive\Investimento\COTAHIST\COTAHIST_A2022.TXT'
+    path_now = 'E:\OneDrive\Investimento\COTAHIST\COTAHIST_A2023.TXT'
     obj = WebScraping(meses, kind, short, long, descartados, path_old, path_now, stdoutmutex)
     obj.time()
     #obj.listaAcoes()

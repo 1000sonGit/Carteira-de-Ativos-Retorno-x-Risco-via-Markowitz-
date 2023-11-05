@@ -41,10 +41,10 @@ class Calculo(threading.Thread):
     def selectAtivos(self):
 
         # Acessando o arquivo csv
-        file_name = os.path.join(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv')
+        file_name = os.path.join(f'E:/OneDrive/Cursos Python/MONETA/Dados/Dados_AntiFragil_{self.meses}_meses.csv')
 
         # Criando o DataFrame
-        df = pd.read_csv(file_name, engine='python', sep=',')
+        df = pd.read_csv(file_name, encoding='ISO-8859-1')
         #print(df)
 
         # Invertendo as linhas e colunas [Função transpose (transposta)]
@@ -254,10 +254,10 @@ class Calculo(threading.Thread):
     def selectAtivosAcertivo(self):
 
         # Acessando o arquivo csv
-        file_name = os.path.join(f'/Users/milso/OneDrive/Cursos Python/MONETA/Dados_Papeis_{self.meses}_meses_{self.kind}.csv')
+        file_name = os.path.join(f'E:/OneDrive/Cursos Python/MONETA/Dados_Papeis_{self.meses}_meses_{self.kind}.csv')
 
         # Criando o DataFrame
-        df = pd.read_csv(file_name, engine='python', sep=',')
+        df = pd.read_csv(file_name, encoding='ISO-8859-1')
 
         #Adicionando título as colunas
         #df.columns = list(range(0, len(df.columns)))
@@ -352,9 +352,9 @@ class Calculo(threading.Thread):
 
         # Armazenando os resultados
         # Verificando se o arquivo existe
-        if os.path.exists(f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'):
-            os.remove(f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv')
-        with open(f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv', 'w', newline='') as dados:
+        if os.path.exists(f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'):
+            os.remove(f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv')
+        with open(f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv', 'w', newline='') as dados:
             writer = csv.writer(dados)
 
             # Criando lista para renomear as colunas
@@ -434,8 +434,8 @@ class Calculo(threading.Thread):
                         #print(unilist)
                         writer.writerow(unilist)
                         unilist.clear()
-        file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-        df = pd.read_csv(file_name, engine='python')
+        file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+        df = pd.read_csv(file_name, encoding='ISO-8859-1')
 
         #df.columns = ['A1', 'A2', 'A3', 'Retorno', 'Risco', 'Maximum']
         #df.columns = self.columns_name
@@ -452,8 +452,8 @@ class Calculo(threading.Thread):
     def ganhoReal(self):
 
         # Obtendo os resultados dos papéis através do Dataframe
-        file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-        df = pd.read_csv(file_name, engine='python')
+        file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+        df = pd.read_csv(file_name, encoding='ISO-8859-1')
         #df.columns = self.columns_name
         df = df.sort_values(['Maximum'], ascending=False)
         #investido = 10000
@@ -492,8 +492,8 @@ class Calculo(threading.Thread):
 
     def quantAtivos(self):
         # Coletando os dados de Ai
-        file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-        df = pd.read_csv(file_name, engine='python')
+        file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+        df = pd.read_csv(file_name, encoding='ISO-8859-1')
         #df.columns = self.columns_name
         df = df.sort_values(['Maximum'], ascending=False)
 
@@ -679,7 +679,10 @@ class Calculo(threading.Thread):
                         #for i in range(self.An):
                         #    porcent.append(df.iloc[self.linha, i] * 100)
                         #print(porcent)
-                        print(f'Retorno:{df.iloc[self.linha, self.An]:.2f}, Risco:{df.iloc[self.linha, self.An + 1]:.2f}, Maximum:{df.iloc[self.linha, self.An + 2]:.2f}')
+                        if self.num_column >= self.An:
+                            print(f'Retorno:{df.iloc[self.linha, self.An]:.2f}, Risco:{df.iloc[self.linha, self.An + 1]:.2f}, Maximum:{df.iloc[self.linha, self.An + 2]:.2f}')
+                        else:
+                            print(f'Retorno:{df.iloc[self.linha, self.num_column]:.2f}, Risco:{df.iloc[self.linha, self.num_column + 1]:.2f}, Maximum:{df.iloc[self.linha, self.num_column + 2]:.2f}')
                         print(f'A quantidade de papéis de cada ativo é:\n{self.valores}')
                         print(self.investimento_min)
                         print(f'R${self.total_invest:.2f}')
@@ -712,9 +715,9 @@ class Calculo(threading.Thread):
         hoje = date.today()
 
         # DECLARANDO LOCAL PARA SALVAR INVESTIMENTO
-        if os.path.exists(f'/Users/milso/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv'):
-            os.remove(f'/Users/milso/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv')
-        with open(f'/Users/milso/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv', 'w', newline='') as dados:
+        if os.path.exists(f'E:/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv'):
+            os.remove(f'E:/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv')
+        with open(f'E:/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_AF_{self.meses}_meses_{self.kind}_{self.An}papeis_{hoje}.csv', 'w', newline='') as dados:
             writer = csv.writer(dados)
 
             lista = []
@@ -742,8 +745,8 @@ class Calculo(threading.Thread):
     def comparaInvest(self):
 
         #ABRINDO O ARQUIVO DO INVESTIMENTO EFETUADO
-        #openFile = f'/Users/milso/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_{self.meses}_meses_{self.kind}_{self.An}papeis_2019-06-17.csv'
-        #openFile = f'/Users/milso/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_6_meses_mensal_14papeis_2019-06-06.csv'
+        #openFile = f'E:/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_{self.meses}_meses_{self.kind}_{self.An}papeis_2019-06-17.csv'
+        #openFile = f'E:/OneDrive/Cursos Python/MONETA/Investimentos/Investimento_6_meses_mensal_14papeis_2019-06-06.csv'
         openFile = self.path_salvo
         df_Open = pd.read_csv(openFile, sep=';', engine='python')
         #Transpondo a dataframe
@@ -817,8 +820,8 @@ class Calculo(threading.Thread):
 
     def plot(self):
         if self.capMax == 0:
-            file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-            df = pd.read_csv(file_name, engine='python')
+            file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+            df = pd.read_csv(file_name, encoding='ISO-8859-1')
             df.columns = self.columns_name
             df = df.sort_values(['Maximum'], ascending=False)
             #df.plot('Risco', 'Retorno') #(x,y)
@@ -852,8 +855,8 @@ class Calculo(threading.Thread):
             plt.show()
 
         else:
-            file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-            df = pd.read_csv(file_name, engine='python')
+            file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+            df = pd.read_csv(file_name, encoding='ISO-8859-1')
             df.columns = self.columns_name
             df = df.sort_values(['Maximum'], ascending=False)
             # df.plot('Risco', 'Retorno') #(x,y)
@@ -893,8 +896,8 @@ class Calculo(threading.Thread):
 
     def plotPizza(self):
         if self.capMax == 0:
-            file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-            df = pd.read_csv(file_name, engine='python')
+            file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_AF_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+            df = pd.read_csv(file_name, encoding='ISO-8859-1')
             df.columns = self.columns_name
             df = df.sort_values(['Maximum'], ascending=False)
 
@@ -913,8 +916,8 @@ class Calculo(threading.Thread):
             plt.show()
 
         else:
-            file_name = f'/Users/milso/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
-            df = pd.read_csv(file_name, engine='python')
+            file_name = f'E:/OneDrive/Cursos Python/MONETA/Resultados/Dados_Resultados_{self.meses}_meses_{self.kind}_{self.An}papeis.csv'
+            df = pd.read_csv(file_name, encoding='ISO-8859-1')
             df.columns = self.columns_name
             df = df.sort_values(['Maximum'], ascending=False)
 
@@ -949,15 +952,15 @@ if __name__ == '__main__':
     threads = []
     fixos = ['']
     papeis = 12
-    kind = 'mensal'
+    kind = 'semanal'
     #kind = 'diario'
     meses = 6
     iter = 1000000
-    capMax = float(0)#5200)
+    capMax = float(150000)#5200)
     pvpmin = 0.9
-    pvpmax = 1.2
-    liquidez = 2000
-    path_salvo = f'/Users/milso/OneDrive/Investimento/Carteira atual/Exportar_custodia_2019-08-14.csv'
+    pvpmax = 1.4
+    liquidez = 1200
+    path_salvo = f'E:/OneDrive/Investimento/Carteira atual/Exportar_custodia_2019-08-14.csv'
     bob = Calculo(papeis, meses, kind, iter, stdoutmutex, capMax, pvpmin, pvpmax, liquidez, fixos, path_salvo)
     bob.selectAtivos()
     # Ativar quando quiser ver acertividade e comentar bob.selectAtivos
@@ -969,7 +972,8 @@ if __name__ == '__main__':
         thread.join()
 
     # Implementando threading para o PO
-    threadPO = threading.Thread(target=bob.quantAtivos())#, args=(capMax,))
+    threadPO = threading.Thread(target=bob.quantAtivos(), args=(capMax,))
+    #threadPO = threading.Thread(target=bob.quantAtivos())  # , args=(capMax,))
     threadPO.daemon = True
     threadPO.start()
     threads.clear()
@@ -978,7 +982,7 @@ if __name__ == '__main__':
         thread.join()
     # PARA VERIFICAR A ACERTIVIDADE
     #bob.ganhoReal()
-    bob.comparaInvest()
+    #bob.comparaInvest()
     # Obtendo o tempo de execução:
     duracao = round((perf_counter()), 0)
     horas = int(duracao // 3600)
